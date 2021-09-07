@@ -1,32 +1,34 @@
 package com.github.galads
 
-fun fizzBuzz(start: Int? = 1, end: Int? = 100) {
-    if ((start is Int) && (end is Int)) {
-        for (i in start..end) {
-            println (
-                when {
-                    (i % 5 == 0 && i % 3 == 0) -> "\u001B[32mFizz Buzz\u001B[0m"
-                    (i % 3) == 0 -> "\u001B[35mFizz\u001B[0m"
-                    (i % 5) == 0 -> "\u001B[33mBuzz\u001B[0m"
-                    else ->  i
-                }
-            )
+private fun termGreen() = "\u001B[32m"
+
+private fun termPurple() = "\u001B[35m"
+
+private fun termYellow() = "\u001B[33m"
+
+private fun termReset() = "\u001B[0m"
+
+private fun strIntException() = IllegalArgumentException("Argument should be Int")
+
+fun fizzBuzz(start: Int, end: Int) {
+    (start..end).forEach {
+        val strPrint = when {
+            it % 5 == 0 && it % 3 == 0 -> "${termGreen()}Fizz Buzz${termReset()}"
+            it % 3 == 0 -> "${termPurple()}Fizz${termReset()}"
+            it % 5 == 0 -> "${termYellow()}Buzz${termReset()}"
+            else ->  "$it"
         }
-    } else
-        throw Exception ("\u001B[31mError: argument is a \"null\"\u001B[0m")
+        println(strPrint)
+    }
 }
 
 object FizzBuzz {
     @JvmStatic
     fun main(args: Array<String>) {
-        var num: Int? = null
-
-        try {
-            if (args.size > 1) { throw Exception("\u001B[31mError: more arguments\u001B[0m") }
-            if (args.isNotEmpty()) { num = args[0].toInt() }
-            fizzBuzz(num)
-        } catch (e: Exception) {
-            println(e)
-        }
+        if (args.size < 2)
+            throw IllegalArgumentException("At least two arguments required: <start> <stop>")
+        val start = args[0].toIntOrNull() ?: throw strIntException()
+        val end = args[1].toIntOrNull() ?: throw strIntException()
+        fizzBuzz(start, end)
     }
 }
