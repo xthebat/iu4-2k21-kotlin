@@ -1,4 +1,4 @@
-package ru.bmstu.iu4
+package ru.bmstu.iu4.sem01
 
 
 object Program {
