@@ -11,10 +11,15 @@ fun Array<String>.parseArguments(vararg parameters: Parameter<*>): Map<Parameter
 }
 
 
-// --mails we@gmail.com,all@gmail.com,any@gmail.com
+// --mails we@gmail.com,all@gmail.com,any@gmail.com -i 1
 fun main(args: Array<String>) {
     val mails = parameter("-m", "--mails") { it.split(",") }
-    val parameters = args.parseArguments(mails)
+    val interval = parameter("-i", "--interval") { it.toInt() }
+
+    val parameters = args.parseArguments(mails, interval)
+
     val mailsValue = parameters[mails] as List<String>
+    val intervalValue = parameters[interval] as Int
     mailsValue.forEach { println(it) }
+    println("Spam interval is $intervalValue")
 }
