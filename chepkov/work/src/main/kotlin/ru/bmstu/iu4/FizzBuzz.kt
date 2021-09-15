@@ -15,9 +15,10 @@ object FizzBuzz {
             val end = args[1].toInt()
             if (start in 1 until end)
                 (start..end).forEach {
-                    println(fizzbuzz(it))
+                    print("${fizzbuzz(it)} ")
                 }
             else println("Диапазон введён неверно.")
         } else println("Пожалуйста, укажите два аргумента: начало отсчёта и конец.")
     }
 }
+
