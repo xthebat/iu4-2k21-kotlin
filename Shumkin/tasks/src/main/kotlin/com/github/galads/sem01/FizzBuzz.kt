@@ -1,4 +1,4 @@
-package com.github.galads
+package com.github.galads.sem01
 
 private fun termGreen() = "\u001B[32m"
 
