@@ -110,22 +110,19 @@ fun File.depth(base: File) = absolutePath
     .removePrefix(base.absolutePath)
     .count { value -> value == File.separatorChar }
 
-fun File.depthLast(base: File): File = File(absolutePath.removePrefix(base.toString()))
-
 fun File.folderSize(dir: File): Float {
     var len = 0.0F
     if (dir.listFiles() != null && dir.listFiles().isNotEmpty()) {
         for (file in dir?.listFiles()) {
             if (dir?.listFiles().size == 1)
                 len += dir.length()
-            if (file.isFile)
-                len += file.length()
-            else
-                len += folderSize(file)
+            when {
+                file.isFile -> len += file.length()
+                else -> len += folderSize(file)
+            }
         }
-    } else {
+    } else
         len += dir.length()
-    }
     return len
 }
 
