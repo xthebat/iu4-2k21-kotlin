@@ -1,7 +1,6 @@
 package com.github.galads.sem03
 
 import java.io.File
-import kotlin.math.roundToLong
 
 interface Queue<T> {
     fun enqueue(element: T): Boolean
@@ -51,17 +50,6 @@ open class TreeNode<T>(val value: T) {
         visit(this)
         child.forEach {
             it.forEachDepthRecursive(visit)
-        }
-    }
-}
-
-class TreeNodeFile(value: File) : TreeNode<File>(value) {
-    var depth = 3
-    var current: File? = null
-    var currentFiles: Array<File>? = null
-    fun forEachLvlOrder(visit: (TreeNode<File>) -> Unit) {
-        for (i in 0 until queue.count) {
-            println(queue.dequeue())
         }
     }
 }
@@ -126,13 +114,14 @@ fun File.depthLast(base: File): File = File(absolutePath.removePrefix(base.toStr
 
 fun File.folderSize(dir: File): Float {
     var len = 0.0F
-    if (dir.listFiles() != null) {
+    if (dir.listFiles() != null && dir.listFiles().isNotEmpty()) {
         for (file in dir?.listFiles()) {
+            if (dir?.listFiles().size == 1)
+                len += dir.length()
             if (file.isFile)
                 len += file.length()
-            else {
+            else
                 len += folderSize(file)
-            }
         }
     } else {
         len += dir.length()
@@ -146,15 +135,38 @@ fun File.countFilesInDir(): Int {
     return files?.size ?: 0
 }
 
+
+/*parameters*/
+
+typealias ConvertParam<T> = (String) -> T
+
+data class Parameter<T : Any>(val short: String, val full: String, val convert: ConvertParam<T>)
+
+fun Array<String>.parseArguments(vararg parameter: Parameter<*>): Map<Parameter<*>, *> {
+    return mapIndexed { index, name ->
+        val param = parameter.find { name == it.full || name == it.short }
+        if (param != null) index to param else null
+    }
+        .filterNotNull()
+        .associate { (index, parameter) ->
+            val value = this[index + 1]
+            parameter to parameter.convert(value)
+        }
+}
+
+/*parameters*/
+
 object LsNested {
     @JvmStatic
     fun main(arg: Array<String>) {
 
-        val directory = "/home/nico/iu4-2k21-kotlin/Shumkin"
-        val deptLvl = 4
-        val base = File(directory)
+        val dir = Parameter("-d", "--directoryPath") { it }
+        val depth = Parameter("-m", "--maxDepth") { it.toInt() }
+        val parameters = arg.parseArguments(dir, depth)
+        val base = File(parameters[dir] as String)
+
         base
-            .traverse(deptLvl)
+            .traverse(parameters[depth] as Int)
             .forEach { file ->
                 println(
                     "%15.3fK| %10.10s| %s".format(
