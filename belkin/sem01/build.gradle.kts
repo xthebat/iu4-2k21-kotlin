@@ -11,4 +11,5 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("io.github.pityka:fileutils_2.13:1.2.5")
 }
