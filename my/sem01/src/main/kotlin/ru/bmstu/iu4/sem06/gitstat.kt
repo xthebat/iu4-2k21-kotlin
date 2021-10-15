@@ -1,61 +1,53 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package ru.bmstu.iu4.sem06
 
-import java.util.*
+import ru.bmstu.iu4.sem06.desc.changes.Change
+import ru.bmstu.iu4.sem06.desc.changes.TextChange
+import ru.bmstu.iu4.sem06.desc.commit.Commit
 
-data class Settings(val path: String, val authors: List<String>)
-
-data class Change(val path: String, val count: Int, val line: String, val isBinary: Boolean)
-
-data class Commits(
-    val id: String,
-    val author: String,
-    val email: String,
-    val date: String,  // Date
-    val isMerge: Boolean,
-    val comment: String,
-    val changes: List<String>,   // List<Change>
-//    val summary: String
-)
-
-fun git(path: String) = shell("git", "--no-pager", "-C", path, "log", "--stat")
-
+inline fun Collection<Change>.totalTextChanges() = filterIsInstance<TextChange>().sumOf { it.count }
 
 fun main(args: Array<String>) {
     val jsonPath = args[0]
     val settings = jsonPath.toFile().fromJson<Settings>()
-    println(settings.path)
+//    println(settings.path)
 
     val text = git(settings.path)
-    println(text)
+//    println(text)
 
     val commits = text
         .removePrefix("commit ")
         .split("\n\ncommit ")
         .map { string ->
-            val lines = string.lines()
-
-            val id = lines.take(1)
-
-            val header = lines
-                .drop(1)
-                .takeWhile { it.isNotBlank() }
-                .associate {
-                    val (key, value) = it.split(":")
-                    key to value.trim()
-                }
-
-            val comment = lines
-                .filter { it.startsWith("    ") }
-                .joinToString("\n") { it.trim() }
-
-            val changes = lines.filter {
-                it.startsWith(" ") && !it.startsWith("    ") && "|" in it
-            }
-
-            val summary = if (changes.isNotEmpty()) lines.last() else null
-
-            println(header)
+            Commit
+                .runCatching { fromString(string) }
+                .onFailure { println("Can't parse commit string:\n$string") }
+                .getOrThrow()
         }
 
-    println(commits)
+    val commitsByUser = commits.groupBy { it.email }
+
+//    println(commitsByUser)
+
+    val changesByUser = commitsByUser
+        .mapValues { (_, userCommits) ->
+            userCommits
+                .flatMap { it.changes }
+                .totalTextChanges()
+        }
+        .onEach { (user, changes) ->
+            println("$user -> $changes")
+        }
+
+//    println(changesByUser)
+
+//    .mapValues { (_, userCommits) ->
+//        userCommits.sumOf { it.changes.totalTextChanges() }
+//    }
+
+//    commits.forEach { commit ->
+//        val totalChanges = commit.changes.filterIsInstance<TextChange>().sumOf { it.count }
+//        println("total=$totalChanges commit=$commit")
+//    }
 }
