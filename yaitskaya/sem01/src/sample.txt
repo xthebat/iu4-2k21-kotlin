@@ -1,0 +1,1 @@
+In this article, we saw the various ways of reading a file in Kotlin. Depending on the use case, we can either opt for reading the file line-by-line or reading it entirely as a text. We can refer to the file in an absolute manner or find it among resources.The source code for this article can be found in the following GitHub repo. Comments are closed on this article!
