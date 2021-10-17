@@ -35,13 +35,14 @@ class DirectoryRecursiveIteratorTemplate(
 
     override fun hasNext(): Boolean {
         if (index < currentFiles.size) {
-            if (cache!!.containsKey(currentFiles[index].parentFile) && !(currentFiles[index].isDirectory)) {
+            if (cache != null && cache.containsKey(currentFiles[index].parentFile) && !(currentFiles[index].isDirectory)) {
                 file = cache[currentFiles[index].parentFile]!![index]
                 return true
             }
             var file = currentFiles[index]
             while (file.isDirectory && canGoDeeper()) {
-                if (cache.containsKey(file)) {
+                if (cache != null && file in cache) {
+                    pushStack()
                     currentFiles = cache[file]!!.toTypedArray()
                     index = 0
                     file = currentFiles[index]
@@ -68,7 +69,7 @@ class DirectoryRecursiveIteratorTemplate(
     }
 
     override fun next(): File {
-        if (!(cache!!.containsKey(currentFiles[index].parentFile)))
+        if (cache != null && currentFiles[index].parentFile !in cache)
             cache[currentFiles[index].parentFile] = currentFiles[index].parentFile.listFiles()!!.toMutableList()
         return currentFiles[index++]
     }
@@ -87,33 +88,23 @@ fun File.depth(base: File) = absolutePath
 fun File.totalSize(): Long = if (isDirectory) listFilesOrThrow().sumOf { it.totalSize() } else length()
 
 fun File.totalSize2(cache: Cache = mutableMapOf()): Long =
-    traverse(cache)
-        .filterNot {
-            it.isDirectory
-        }
-        .sumOf {
-            it.length()
-        }
+    traverse(cache).filterNot { it.isDirectory }.sumOf { it.length() }
 
 fun Long.humanReadableSize() = when {
     this < 0 -> error("Not a filesize")
-    this < 1024 -> "${this} B"
+    this < 1024 -> "$this B"
     this < 1_048_576 -> "${this / 1024}KB"
     this < 1_073_741_824 -> "${this / 1024 / 1024}MB"
     else -> "${this / 1024 / 1024 / 1024}GB"
 }
 
-fun main(array: Array<String>) {
-
-    val directory = "/home/nico/nwetest"
+fun main(arr: Array<String>) {
+    val directory = "/home/nico/iu4-2k21-kotlin"
     val base = File(directory)
-
-    val sizes = mutableMapOf<File, Long>()
-
     val traverseCache = mutableMapOf<File, MutableList<File>?>()
 
     base
-        .traverse(traverseCache, 3)
+        .traverse(traverseCache)
 //        .filter { it.depth(base) < 2 }
 //        .filter { it.extension == "own" }
 //        .filter { it.depth(base) != 0 }
@@ -129,8 +120,7 @@ fun main(array: Array<String>) {
 //        .sortedByDescending { it.second }
 //        .sortedBy { it.second }
 //        .find { it.nameWithoutExtension == "ceaser_input" }
-/////////////////////////////////////////////////////////
-        .sortedWith(compareBy<Pair<File, Long>> { it.first }.thenByDescending { it.second })
+//        .sortedWith(compareBy<Pair<File, Long>> { it.first }.thenByDescending { it.second })
         .forEach { (file, size) ->
             val hrf = size.humanReadableSize()
             val depth = file.depth(base)
@@ -140,5 +130,4 @@ fun main(array: Array<String>) {
             val pad = if (depth != 0) "%%%ds".format(depth * 4).format(" ") else ""
             println("%s %10s %s %s".format(depth, hrf, pad, path))
         }
-//    println(traverseCache)
 }
