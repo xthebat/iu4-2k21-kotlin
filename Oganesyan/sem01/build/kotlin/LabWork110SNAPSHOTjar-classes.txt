@@ -1,0 +1,1 @@
+S:\Coding\Kotlin\LabWork1\build\classes\kotlin\main\ru\bmstu\iu4\FizzBuzz.class
