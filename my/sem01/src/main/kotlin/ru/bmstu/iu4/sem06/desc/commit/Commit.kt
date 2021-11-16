@@ -1,5 +1,6 @@
 package ru.bmstu.iu4.sem06.desc.commit
 
+import ru.bmstu.iu4.sem06.Aliases
 import ru.bmstu.iu4.sem06.desc.changes.Change
 import java.text.SimpleDateFormat
 import java.util.*
@@ -7,6 +8,7 @@ import java.util.*
 
 data class Commit(
     val id: String,
+    val name: String,
     val author: String,
     val email: String,
     val date: Date,
@@ -22,7 +24,8 @@ data class Commit(
             id: String,
             header: Map<String, String>,
             comment: String,
-            changes: List<Change>
+            changes: List<Change>,
+            aliases: Aliases
         ): Commit {
             val isMerge = "Merge" in header
             val authorAndMail = header.getValue("Author")
@@ -31,12 +34,14 @@ data class Commit(
             val email = authorAndMail.substringAfterLast("<").substringBefore(">")
             val author = authorAndMail.substringBeforeLast("<").trim()
 
+            val name = aliases.entries.find { (_, emails) -> email in emails }?.key ?: author
+
             val date = formatter.parse(dateString)
 
-            return Commit(id, author, email, date, isMerge, comment, changes)
+            return Commit(id, name, author, email, date, isMerge, comment, changes)
         }
 
-        fun fromString(string: String): Commit {
+        fun fromString(string: String, aliases: Aliases): Commit {
             val lines = string.lines()
 
             val id = lines.first()
@@ -61,7 +66,7 @@ data class Commit(
 
 //            val summary = if (changes.isNotEmpty()) lines.last() else null
 
-            return fromHeader(id, header, comment, changes)
+            return fromHeader(id, header, comment, changes, aliases)
         }
     }
 }

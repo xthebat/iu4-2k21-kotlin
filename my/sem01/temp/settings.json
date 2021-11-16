@@ -1,7 +1,5 @@
 {
-  "path": "../../",
-  "authors": [
-    "Alexei Gladkikh",
-    "Anton"
-  ]
+  "aliases": {
+    "Alexei Gladkikh": ["a.gladkikh@inforion.ru", "gladkikhalexei@gmail.com"]
+  }
 }
